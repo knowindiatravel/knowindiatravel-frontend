@@ -1,24 +1,28 @@
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import dotenv from "dotenv";
 
-export default ({ mode }) => {
-  // Load env variables based on mode (development/production)
-  const env = loadEnv(mode, process.cwd(), '');
+// ✅ Load local .env file only during local development
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
-  return defineConfig({
-    plugins: [react()],
-    define: {
-      // Explicitly define environment variables
-      'process.env': env
+const API_BASE_URL = process.env.VITE_API_BASE_URL;
+
+export default defineConfig({
+  plugins: [react()],
+  assetsInclude: ["**/*.mp4"], // Support video files
+  base: "/", // Set base path for deployment
+  build: {
+    outDir: "../backend/client/dist", // Output directory for production build
+  },
+  server: {
+    proxy: {
+      "/api": {
+        target: API_BASE_URL,          // ✅ Uses env variable
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
     },
-    server: {
-      proxy: {
-        '/api': {
-          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '')
-        }
-      }
-    }
-  });
-};
+  },
+});
