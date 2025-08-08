@@ -1,0 +1,11 @@
+{
+  "rewrites": [
+    { "source": "/attractions", "destination": "/" },
+    { "source": "/experiences", "destination": "/" },
+    { "source": "/festivals", "destination": "/" },
+    { "source": "/faqs", "destination": "/" },
+    { "source": "/terms", "destination": "/" },
+    { "source": "/privacy", "destination": "/" },
+    { "source": "/Update", "destination": "/" }
+  ]
+}
