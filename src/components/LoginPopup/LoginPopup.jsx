@@ -60,65 +60,58 @@ const LoginPopup = forwardRef(({ onClose }, ref) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (isLoginView) {
-      // LOGIN
-      fetch(${import.meta.env.VITE_API_BASE_URL}/Login, {
+      console.log("Logging in with:", formData.email, formData.password);
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/Login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          // Add authorization header if needed
+          // "Authorization": `Bearer ${token}`
+        },
+        credentials: "include", // Required for cookies/sessions
         body: JSON.stringify(formData),
       })
         .then((res) => res.json())
         .then(async (result) => {
-          if (result.sess === null) {
-            toast.error(result.message || "Invalid credentials");
-          } else {
+          if (result.sess === null) toast.success(result.message);
+          else {
             localStorage.setItem("auth.session", JSON.stringify(result.sess));
+            console.log(result.sess);
             const { data, error } = await supabase.auth.setSession({
               access_token: result.sess.access_token,
               refresh_token: result.sess.refresh_token,
             });
             if (data) {
               localStorage.setItem("user.image", result.message);
-              toast.success("✅ You are signed in");
-            } else {
-              toast.error(error.message);
-            }
+              window.location.reload();
+            } else toast.success(error.message);
           }
         })
-        .catch(() => {
-          toast.error("Internal problem during login");
-        })
-        .finally(() => {
-          // Close popup no matter success or fail
-          setTimeout(() => {
-            onClose();
-          }, 1500); // small delay so toast is visible
+        .catch((error) => {
+          console.log("Error-> ", error);
+          toast.success("internal problem");
         });
     } else {
-      // SIGNUP
       formData.phone = value;
-      fetch(${import.meta.env.VITE_API_BASE_URL}/Signup, {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/Signup`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          // Add authorization header if needed
+          // "Authorization": `Bearer ${token}`
+        },
+        credentials: "include", // Required for cookies/sessions
         body: JSON.stringify(formData),
       })
         .then((res) => res.json())
         .then((result) => {
-          toast.success(
-            "🎉 You are signed up Check Email to verify your account"
-          );
+          toast.success(result.message);
         })
-        .catch(() => {
-          toast.error("Internal error during signup");
-        })
-        .finally(() => {
-          // Close popup no matter what
-          setTimeout(() => {
-            onClose();
-          }, 1500);
+        .catch((error) => {
+          toast.success("Internal Error");
+
+          console.log("Error->  ", error);
         });
     }
   };
