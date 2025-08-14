@@ -37,8 +37,8 @@ const Contact = () => {
             </div>
             <div className="info-content">
               <h3>Head Office</h3>
-              <p>123 Travel Plaza, Connaught Place</p>
-              <p>New Delhi - 110001, India</p>
+              <p>Rani Bagan Bariyatu, Ranchi</p>
+              <p>Jharkhand - 834009, India</p>
             </div>
           </div>
 
@@ -49,7 +49,7 @@ const Contact = () => {
             <div className="info-content">
               <h3>Phone</h3>
               <p>+91 11 2345 6789 (Office)</p>
-              <p>+91 98765 43210 (24/7 Helpline)</p>
+              <p>+91 97178 90191 (24/7 Helpline)</p>
             </div>
           </div>
 
@@ -59,7 +59,7 @@ const Contact = () => {
             </div>
             <div className="info-content">
               <h3>Email</h3>
-              <p>info@knowindiatravel.com</p>
+              <p>knowindiatravel5@gmail.com</p>
               <p>bookings@knowindiatravel.com</p>
             </div>
           </div>
