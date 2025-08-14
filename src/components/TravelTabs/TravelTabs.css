@@ -96,7 +96,7 @@
   transform: scale(1.05);
 }
 
-.price-badge {
+/* .price-badge {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -106,7 +106,7 @@
   border-radius: 50px;
   font-weight: 600;
   font-size: 0.9rem;
-}
+} */
 
 .destination-info {
   padding: 1.5rem;
