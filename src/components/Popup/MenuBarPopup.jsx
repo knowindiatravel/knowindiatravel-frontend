@@ -83,9 +83,9 @@ const MenuBarPopup = ({
             <div className="contact-item" style={{ marginTop: "1rem" }}>
               <FaMapMarkerAlt className="contact-icon" />
               <span>
-                123 Travel Plaza, Connaught Place
+                Rani Bagan Bariyatu, Ranchi
                 <br />
-                New Delhi - 110001, India
+                Jharkhand - 834009, India
               </span>
             </div>
 
@@ -94,7 +94,7 @@ const MenuBarPopup = ({
               <div>
                 <a href="tel:+911123456789">+91 11 2345 6789 (Office)</a>
                 <br />
-                <a href="tel:+919876543210">+91 98765 43210 (24/7 Helpline)</a>
+                <a href="tel:+919876543210">+91 97178 90191 (24/7 Helpline)</a>
               </div>
             </div>
 
@@ -102,7 +102,7 @@ const MenuBarPopup = ({
               <FaEnvelope className="contact-icon" />
               <div>
                 <a href="mailto:info@knowindiatravel.com">
-                  info@knowindiatravel.com
+                  knowindiatravel5@gmail.com
                 </a>
                 <br />
                 <a href="mailto:bookings@knowindiatravel.com">
