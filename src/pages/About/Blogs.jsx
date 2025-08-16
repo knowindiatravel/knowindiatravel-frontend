@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaStar, FaRegStar, FaPlay, FaBookOpen, FaEye } from "react-icons/fa";
-import { FiChevronRight, FiUpload } from "react-icons/fi";
+import { FiUpload } from "react-icons/fi";
 import "./Blogs.css";
 import { toast, ToastContainer } from "react-toastify";
 import { createClient } from "@supabase/supabase-js";
-//import Dark from './Dark'
+// import "react-toastify/dist/ReactToastify.css"; // include once globally if not already
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_KEY;
@@ -12,16 +12,16 @@ const supabase = createClient(url, key);
 
 const Blogs = () => {
   const [activeTab, setActiveTab] = useState("reviews");
+
+  // Single source of truth for DB comments
   const [reviews, setReviews] = useState([]);
+
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isManualSelection, setIsManualSelection] = useState(false);
   const videoRefs = useRef([]);
   const fileInputRef = useRef(null);
-  //const [path,setpath] = useState('');
 
-  const [Reviews, setreviews] = useState([]);
-
-  //Initial blog reviews data
+  // (kept to stay “same to same”, but not used for display)
   const initialReviews = [
     {
       id: 1,
@@ -63,45 +63,13 @@ const Blogs = () => {
     },
   ];
 
-  const func = async (e) => {
-    const { data } = await supabase.from("Comments").select("*");
-    setreviews(data);
-    console.log(Reviews);
-  };
-
-  useEffect(() => {
-    func();
-  }, []);
-  //func();
-  // YouTube videos data with embed IDs extracted from the URLs
   const youtubeVideos = [
-    {
-      id: "y1",
-      title: "Taj Mahal Complete Tour Guide",
-      embedId: "49HTIoCccDY",
-      views: "1.2M views",
-    },
-    {
-      id: "y2",
-      title: "Kerala Backwaters Experience",
-      embedId: "DX5n2f5Vu9s",
-      views: "856K views",
-    },
-    {
-      id: "y3",
-      title: "Rajasthan Cultural Journey",
-      embedId: "w9WAvgIHJr4",
-      views: "723K views",
-    },
-    {
-      id: "y4",
-      title: "Himalayan Trekking Documentary",
-      embedId: "H9-OOl_9r6I",
-      views: "1.5M views",
-    },
+    { id: "y1", title: "Taj Mahal Complete Tour Guide", embedId: "49HTIoCccDY", views: "1.2M views" },
+    { id: "y2", title: "Kerala Backwaters Experience", embedId: "DX5n2f5Vu9s", views: "856K views" },
+    { id: "y3", title: "Rajasthan Cultural Journey", embedId: "w9WAvgIHJr4", views: "723K views" },
+    { id: "y4", title: "Himalayan Trekking Documentary", embedId: "H9-OOl_9r6I", views: "1.5M views" },
   ];
 
-  // Default avatars avatar: defaultAvatars[0],
   const defaultAvatars = [
     "https://randomuser.me/api/portraits/men/1.jpg",
     "https://randomuser.me/api/portraits/women/1.jpg",
@@ -120,9 +88,47 @@ const Blogs = () => {
     excerpt: "",
   });
 
-  // Initialize reviews
+  // Fetch comments from DB
+  const fetchComments = async () => {
+    const { data, error } = await supabase
+      .from("Comments")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Fetch comments error:", error);
+      return;
+    }
+    setReviews(Array.isArray(data) ? data : []);
+  };
+
+  // Load once + subscribe to realtime
   useEffect(() => {
-    setReviews(initialReviews);
+    fetchComments();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel("comments-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "Comments" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setReviews((prev) => [payload.new, ...prev]);
+          } else if (payload.eventType === "UPDATE") {
+            setReviews((prev) =>
+              prev.map((r) => (r.id === payload.new.id ? payload.new : r))
+            );
+          } else if (payload.eventType === "DELETE") {
+            setReviews((prev) => prev.filter((r) => r.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Auto-play videos in sequence (10 seconds)
@@ -132,90 +138,92 @@ const Blogs = () => {
     const timer = setTimeout(() => {
       const nextIndex = (currentVideoIndex + 1) % youtubeVideos.length;
       setCurrentVideoIndex(nextIndex);
-    }, 10000); // Change every 10 seconds
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [currentVideoIndex, isManualSelection]);
 
-  // Handle manual video selection
   const handleVideoSelect = (index) => {
     setIsManualSelection(true);
     setCurrentVideoIndex(index);
-
-    // Reset manual selection after 30 seconds of inactivity
-    setTimeout(() => {
-      setIsManualSelection(false);
-    }, 30000);
+    setTimeout(() => setIsManualSelection(false), 30000);
   };
 
-  // Render star ratings
-  const renderStars = (rating) => {
+  const renderStars = (ratingVal) => {
+    const n = Number(ratingVal) || 0;
     return [...Array(5)].map((_, i) =>
-      i < rating ? (
-        <FaStar key={i} className="star filled" />
-      ) : (
-        <FaRegStar key={i} className="star" />
-      )
+      i < n ? <FaStar key={i} className="star filled" /> : <FaRegStar key={i} className="star" />
     );
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((f) => ({ ...f, [name]: value }));
   };
 
   const handleRatingChange = (rating) => {
-    setFormData({
-      ...formData,
-      rating: rating,
-    });
+    setFormData((f) => ({ ...f, rating }));
   };
 
-  // const handleAvatarUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setFormData({
-  //         ...formData,
-  //         avatar: reader.result,
-  //       });
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
+  // const handleAvatarUpload = (e) => { ... } // keeping your original commented code
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
 
+    // Ensure user is logged in
     const {
       data: { user },
-      error,
+      error: userErr,
     } = await supabase.auth.getUser();
-    if (user) {
-      //console.log(user);
-      formData.name = user.user_metadata.first_name;
-      formData.email = user.email;
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/Blogs`, {
+
+    if (!user) {
+      toast.error(userErr?.message || "Please log in to submit a review.");
+      return;
+    }
+
+    try {
+      // Fill name/email from auth to avoid tampering
+      const payload = {
+        ...formData,
+        name: user.user_metadata?.first_name || user.email?.split("@")[0] || "Guest",
+        email: user.email,
+      };
+
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Blogs`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-        .then((res) => res.json())
-        .then((result) => {
-          if (!Array.isArray(result.message)) {
-            toast.success(result.message);
-          } else {
-            setReviews(result.message[0]);
-            setpath(result.url);
-          }
-        });
-    } else toast.success(error.message);
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await resp.json();
+
+      // Success path from your backend (/Blogs returns { message: insert, url })
+      if (Array.isArray(result.message) && result.message.length > 0) {
+        const newReview = result.message[0];
+        // Optimistic update (Realtime will also deliver it, but this makes it instant)
+        setReviews((prev) => [newReview, ...prev]);
+        toast.success("Review posted!");
+      } else if (typeof result.message === "string") {
+        toast.success(result.message);
+        // If backend didn’t return the row, we still rely on realtime or refetch
+        fetchComments();
+      } else {
+        toast.error("Could not post review.");
+      }
+
+      // Reset form
+      setFormData({
+        title: "",
+        name: "",
+        email: "",
+        rating: 5,
+        comment: "",
+        excerpt: "",
+      });
+    } catch (err) {
+      console.error("Submit review error:", err);
+      toast.error("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -276,6 +284,7 @@ const Blogs = () => {
                 />
               </div>
 
+              {/* Avatar section kept as comment to stay same-to-same */}
               {/* <div className="form-group">
                 <label>Your Avatar</label>
                 <div className="avatar-selection">
@@ -317,10 +326,10 @@ const Blogs = () => {
                   {[1, 2, 3, 4, 5].map((star) => (
                     <span
                       key={star}
-                      className={`star ${
-                        star <= formData.rating ? "filled" : ""
-                      }`}
+                      className={`star ${star <= formData.rating ? "filled" : ""}`}
                       onClick={() => handleRatingChange(star)}
+                      role="button"
+                      aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
                     >
                       ★
                     </span>
@@ -354,33 +363,36 @@ const Blogs = () => {
             </form>
           </div>
 
-          {/* Existing Reviews */}
+          {/* Existing Reviews from DB (real-time) */}
           <div className="reviews-grid">
-            {Reviews.map((review, index) => {
-              return (
-                <div key={index} className="review-card">
-                  <div className="review-header">
-                    <img
-                      src={review.path}
-                      alt={review.Name}
-                      className="author-avatar"
-                    />
-                    <div className="author-info">
-                      <h3>{review.Name}</h3>
-                      <div className="rating">
-                        {renderStars(review.ratings)}
-
-                        <span className="review-date">{review.created_at}</span>
-                      </div>
+            {reviews.map((review, index) => (
+              <div key={review.id ?? index} className="review-card">
+                <div className="review-header">
+                  <img
+                    src={review.path}
+                    alt={review.Name}
+                    className="author-avatar"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        defaultAvatars[index % defaultAvatars.length];
+                    }}
+                  />
+                  <div className="author-info">
+                    <h3>{review.Name}</h3>
+                    <div className="rating">
+                      {renderStars(review.ratings)}
+                      <span className="review-date">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                  <h4 className="review-title">{review.title}</h4>
-                  <p className="review-comment">"{review.comment}"</p>
-                  <p className="review-excerpt">{review.excerpt}</p>
-                  <button className="read-more-btn">Read Full Story</button>
                 </div>
-              );
-            })}
+                <h4 className="review-title">{review.title}</h4>
+                <p className="review-comment">"{review.comment}"</p>
+                <p className="review-excerpt">{review.excerpt}</p>
+                <button className="read-more-btn">Read Full Story</button>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -391,16 +403,14 @@ const Blogs = () => {
             {youtubeVideos.map((video, index) => (
               <div
                 key={video.id}
-                className={`video-card ${
-                  index === currentVideoIndex ? "active" : ""
-                }`}
+                className={`video-card ${index === currentVideoIndex ? "active" : ""}`}
                 onClick={() => handleVideoSelect(index)}
               >
                 <div className="video-wrapper">
                   <iframe
-                    src={`https://www.youtube.com/embed/${
-                      video.embedId
-                    }?autoplay=${index === currentVideoIndex ? 1 : 0}&mute=1`}
+                    src={`https://www.youtube.com/embed/${video.embedId}?autoplay=${
+                      index === currentVideoIndex ? 1 : 0
+                    }&mute=1`}
                     title={video.title}
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
