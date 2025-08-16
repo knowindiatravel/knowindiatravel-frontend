@@ -1,9 +1,9 @@
 import React from "react";
 import { createClient } from "@supabase/supabase-js";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaSignOutAlt } from "react-icons/fa";
-import "./Signout.css"; // Create this CSS file
+import "./Signout.css";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_KEY;
@@ -12,6 +12,8 @@ const supabase = createClient(url, key);
 const Signout = () => {
   const handleSignOut = async (e) => {
     e.preventDefault();
+    console.log("Clicked sign out ✅");
+
     const { error } = await supabase.auth.signOut();
 
     if (error) {
@@ -20,7 +22,13 @@ const Signout = () => {
       localStorage.removeItem("auth.session");
       localStorage.removeItem("user.image");
       localStorage.removeItem("admin.email");
-      window.location.reload();
+
+      toast.success("Signed out successfully!");
+
+      // Delay reload so toast is visible
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     }
   };
 
@@ -30,6 +38,8 @@ const Signout = () => {
         <FaSignOutAlt className="signout-icon" />
         <span className="signout-text">Sign Out</span>
       </button>
+      {/* Ensure ToastContainer is rendered */}
+      <ToastContainer position="top-center" autoClose={2000} />
     </div>
   );
 };
