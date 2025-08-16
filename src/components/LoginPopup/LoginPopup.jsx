@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import Signout from "./Signout";
 import GoogleAuth from "./GoogleAuth";
 import FacebookAuth from "./FacebookAuth";
+import { toast } from "react-toastify";
 
 // Country list with codes
 const countriesList = [
@@ -200,7 +201,7 @@ const LoginPopup = forwardRef(({ onClose }, ref) => {
         const result = await res.json();
 
         if (!result.sess) {
-          alert(`❌ ${result.message}`);
+          toast.error(`❌ ${result.message}`);
         } else {
           localStorage.setItem("auth.session", JSON.stringify(result.sess));
           const { data, error } = await supabase.auth.setSession({
@@ -209,14 +210,14 @@ const LoginPopup = forwardRef(({ onClose }, ref) => {
           });
           if (data) {
             localStorage.setItem("user.image", result.message);
-            alert("✅ Logged in successfully!");
-            window.location.reload();
+            toast.success("✅ Logged in successfully!");
+            setTimeout(() => window.location.reload(), 2500);
           } else {
-            alert(`⚠️ ${error.message}`);
+            toast.error(`⚠️ ${error.message}`);
           }
         }
       } catch (err) {
-        alert("⚠️ Internal problem. Please try again.");
+        toast.error("⚠️ Internal problem. Please try again.");
       }
     }
   };
