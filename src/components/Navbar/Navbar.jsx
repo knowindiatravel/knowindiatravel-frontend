@@ -69,17 +69,19 @@ const Navbar = () => {
     setActivePopup(popupName);
   };
 
-  const closePopup = () => {
-    if (isMobile && shouldReopenMenuBar) {
+  const closePopup = (forceCloseAll = false) => {
+    if (!forceCloseAll && isMobile && shouldReopenMenuBar) {
       setActivePopup("MenuBar");
       setShouldReopenMenuBar(false);
     } else {
       setActivePopup(null);
+      setShouldReopenMenuBar(false); // prevent reopening later
     }
   };
 
   const handleDropdownClick = (popupName) => {
-    if (isMobile) setShouldReopenMenuBar(true);
+    // force close all other popups first
+    closePopup(true);
     openPopup(popupName);
   };
 
@@ -119,7 +121,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
+    <nav className={navbar ${scrolled ? "scrolled" : ""}}>
       <div className="navbar-container">
         <div className="navbar-left">
           <Link to="/" className="logo-link">
@@ -180,7 +182,7 @@ const Navbar = () => {
           />
           {!isMobile && (
             <Link to="/AdminLogin" className="admin-link">
-              <span className="admin-icon">⚙️</span>
+              <span className="admin-icon">⚙</span>
               <span className="admin-text">Admin</span>
             </Link>
           )}
@@ -211,7 +213,7 @@ const Navbar = () => {
           ref={(ref) => setPopupRef("Destinations", ref)}
           className="wide-popup"
         >
-          <DestinationsPopup onClose={closePopup} />
+          <DestinationsPopup onClose={() => closePopup(true)} />
         </Popup>
       )}
 
@@ -221,7 +223,10 @@ const Navbar = () => {
           onClose={closePopup}
           ref={(ref) => setPopupRef("AboutUs", ref)}
         >
-          <AboutUsPopup onClose={closePopup} />
+          <AboutUsPopup
+            handleDropdownClick={handleDropdownClick}
+            onClose={() => closePopup(true)}
+          />
         </Popup>
       )}
 
