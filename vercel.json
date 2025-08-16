@@ -8,11 +8,12 @@
     { "source": "/privacy", "destination": "/" },
     { "source": "/Update", "destination": "/" },
     { "source": "/contact", "destination": "/" },
-    { "source": "/auth/callback", "destination": "/" }
-    { "source": "/AdminLogin", "destination": "/" }
-    { "source": "/AdminPanel", "destination": "/" }
+    { "source": "/auth/callback", "destination": "/" },
+    { "source": "/AdminLogin", "destination": "/" },
+    { "source": "/AdminPanel", "destination": "/" },
     { "source": "/blogs", "destination": "/" }
   ]
 }
+
 
 
