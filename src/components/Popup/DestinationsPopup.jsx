@@ -69,13 +69,18 @@ const destinationsData = [
 
 const DestinationsPopup = ({ onClose }) => {
   const handleLinkClick = () => {
-    onClose(); // Close the popup when any link is clicked
+    if (onClose) onClose(); // this will now trigger Navbar's closePopup(true)
   };
 
   return (
-    <div className="destination-popup-container" onClick={handleLinkClick}>
+    <div className="destination-popup-container">
       {destinationsData.map((region, index) => (
-        <Link to={region.path} className="region-link" key={index}>
+        <Link
+          to={region.path}
+          className="region-link"
+          key={index}
+          onClick={handleLinkClick}
+        >
           <div className="region-card">
             <img
               className="region-map"
@@ -86,7 +91,11 @@ const DestinationsPopup = ({ onClose }) => {
             <h3 className="region-title">{region.region}</h3>
             <ul className="state-list">
               {region.states.map((state, idx) => (
-                <li key={idx} className="state-name">
+                <li
+                  key={idx}
+                  className="state-name"
+                  onClick={handleLinkClick} // ✅ also close when clicking a state
+                >
                   {state}
                 </li>
               ))}
