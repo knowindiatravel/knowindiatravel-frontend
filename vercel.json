@@ -13,11 +13,13 @@
     { "source": "/AdminPanel", "destination": "/" },
     { "source": "/north-india", "destination": "/" },
     { "source": "/south-india", "destination": "/" },
+    { "source": "/west-india", "destination": "/" },
     { "source": "/east-india", "destination": "/" },
     { "source": "/gallery", "destination": "/" },
     { "source": "/blogs", "destination": "/" }
   ]
 }
+
 
 
 
