@@ -6,6 +6,9 @@ import {
   useLocation,
 } from "react-router-dom";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 // Layout Component
 import Layout from "./Layout";
 
@@ -254,6 +257,17 @@ const App = () => {
     <Router>
       <ScrollToTop />
       <AppRoutes />
+      <ToastContainer
+        position="top-center"
+        autoClose={2500}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />{" "}
     </Router>
   );
 };
