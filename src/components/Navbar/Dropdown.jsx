@@ -8,7 +8,7 @@ const Dropdown = ({ title, isOpen, onOpen, onClose }) => {
   const renderPopupContent = () => {
     switch (title) {
       case "Destinations":
-        return <DestinationsPopup onClose={onClose} />; // ✅ pass onClose
+        return <DestinationsPopup onClose={onClose} />;
       case "About Us":
         return <ExperiencesPopup onClose={onClose} />;
       case "Plan Your Trip":
