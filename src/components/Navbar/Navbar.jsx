@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef } from "react";
 import Dropdown from "./Dropdown";
 import SearchBar from "./SearchBar";
 import Login from "./Login";
-//import { useLocation } from "react-router-dom";
 import MenuBar from "./MenuBar";
 import Clock from "../Clock/Clock";
 import Popup from "../Popup/Popup";
@@ -24,38 +23,25 @@ const Navbar = () => {
   const dropdownButtonsRef = useRef([]);
   const loginButtonRef = useRef(null);
 
-  // Close popup when clicking outside
+  // Handle clicks outside popups
   useEffect(() => {
-    // In your Navbar component
     const handleClickOutside = (event) => {
-      // If no popups are open, do nothing
       if (!activePopup && !isLoginPopupOpen) return;
 
-      // Check if click is inside any popup
       const clickedInsidePopup = Object.values(popupRefs.current).some(
         (ref) => ref && ref.contains(event.target)
       );
 
-      // Check if click is on any dropdown button (including login)
       const clickedOnDropdownButton = dropdownButtonsRef.current.some(
         (button) => button && button.contains(event.target)
       );
 
-      // Check if click is on the login button specifically
       const clickedOnLoginButton =
         loginButtonRef.current && loginButtonRef.current.contains(event.target);
 
-      // Only close if clicking outside all popups AND not on a dropdown button
-      if (
-        !clickedInsidePopup &&
-        !clickedOnDropdownButton &&
-        !clickedOnLoginButton
-      ) {
-        if (isLoginPopupOpen) {
-          closeLoginPopup();
-        } else if (activePopup) {
-          closePopup();
-        }
+      if (!clickedInsidePopup && !clickedOnDropdownButton && !clickedOnLoginButton) {
+        if (isLoginPopupOpen) closeLoginPopup();
+        else if (activePopup) closePopup();
       }
     };
 
@@ -64,7 +50,6 @@ const Navbar = () => {
   }, [activePopup, isLoginPopupOpen]);
 
   const openPopup = (popupName) => {
-    // Close login popup if opening another popup
     if (isLoginPopupOpen) closeLoginPopup();
     setActivePopup(popupName);
   };
@@ -75,18 +60,16 @@ const Navbar = () => {
       setShouldReopenMenuBar(false);
     } else {
       setActivePopup(null);
-      setShouldReopenMenuBar(false); // prevent reopening later
+      setShouldReopenMenuBar(false);
     }
   };
 
   const handleDropdownClick = (popupName) => {
-    // force close all other popups first
     closePopup(true);
     openPopup(popupName);
   };
 
   const openLoginPopup = () => {
-    // Close any other popup when opening login
     if (activePopup) closePopup();
     setIsLoginPopupOpen(true);
   };
@@ -102,11 +85,8 @@ const Navbar = () => {
     window.addEventListener("resize", handleResize);
     window.addEventListener("scroll", handleScroll);
 
-    // Initialize dropdown buttons refs
     dropdownButtonsRef.current = Array.from(
-      document.querySelectorAll(
-        ".dropdown-button, .menu-bar-button, .login-button"
-      )
+      document.querySelectorAll(".dropdown-button, .menu-bar-button, .login-button")
     );
 
     return () => {
@@ -115,26 +95,17 @@ const Navbar = () => {
     };
   }, []);
 
-  // Function to set ref for each popup
   const setPopupRef = (name, ref) => {
     if (ref) popupRefs.current[name] = ref;
   };
 
   return (
-    <nav className={navbar ${scrolled ? "scrolled" : ""}}>
+    <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
       <div className="navbar-container">
         <div className="navbar-left">
           <Link to="/" className="logo-link">
             <span className="logo" style={{ textDecoration: "none" }}>
-              {isMobile ? (
-                <>
-                  <span className="logo-highlight">Know</span>IndiaTravel
-                </>
-              ) : (
-                <>
-                  <span className="logo-highlight">Know</span>IndiaTravel
-                </>
-              )}
+              <span className="logo-highlight">Know</span>IndiaTravel
             </span>
           </Link>
         </div>
@@ -191,11 +162,7 @@ const Navbar = () => {
 
       {/* Popups */}
       {activePopup === "MenuBar" && (
-        <Popup
-          title="Menu"
-          onClose={closePopup}
-          ref={(ref) => setPopupRef("MenuBar", ref)}
-        >
+        <Popup title="Menu" onClose={closePopup} ref={(ref) => setPopupRef("MenuBar", ref)}>
           <MenuBarPopup
             isMobile={isMobile}
             onOpenDestinations={() => handleDropdownClick("Destinations")}
@@ -218,15 +185,8 @@ const Navbar = () => {
       )}
 
       {activePopup === "AboutUs" && (
-        <Popup
-          title="About Us"
-          onClose={closePopup}
-          ref={(ref) => setPopupRef("AboutUs", ref)}
-        >
-          <AboutUsPopup
-            handleDropdownClick={handleDropdownClick}
-            onClose={() => closePopup(true)}
-          />
+        <Popup title="About Us" onClose={closePopup} ref={(ref) => setPopupRef("AboutUs", ref)}>
+          <AboutUsPopup handleDropdownClick={handleDropdownClick} onClose={() => closePopup(true)} />
         </Popup>
       )}
 
@@ -241,12 +201,7 @@ const Navbar = () => {
         </Popup>
       )}
 
-      {isLoginPopupOpen && (
-        <LoginPopup
-          onClose={closeLoginPopup}
-          ref={(ref) => setPopupRef("LoginPopup", ref)}
-        />
-      )}
+      {isLoginPopupOpen && <LoginPopup onClose={closeLoginPopup} ref={(ref) => setPopupRef("LoginPopup", ref)} />}
     </nav>
   );
 };
